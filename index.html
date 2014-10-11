@@ -1,0 +1,83 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>upload_plugin</title>
+</head>
+
+<body>
+<div id="portrait">
+	上传图片的插件;
+</div>
+
+<script src="http://libs.baidu.com/jquery/1.9.0/jquery.js"></script>
+<script>
+//IE下上传文件必须是点击input，通过别的元素触发input元素的上传无效
+(function($) {
+	$.UploadPlugin = function( cfg ) {
+		var defaults = {
+			opt : { method : "POST" ,enctype : "multipart/form-data" },
+			iframeStyle : "position: absolute; height: 10px; width: 10px; left: -9000px;top:-1000px"
+		};
+		$.extend(true, cfg ,  defaults);
+		this.cfg = cfg;
+		this.name = "iframeName"+setTimeout("1");
+		this.href = cfg.href;
+		this.el = $(cfg.el);
+		this.cfg.contain = $(cfg.el).parent();
+		this.contain = $(cfg.contain).css("position","relative");
+		this.width = this.el.outerWidth();
+		this.height = this.el.outerHeight();
+		this.init();
+		this.ev();
+	};
+	$.fn.UploadFrame = function( src ) {
+		this.each(function() {
+			this.upladFrame = new $.UploadPlugin( {el : this , opt : {action : src} })
+		});
+	};
+	$.UploadPlugin.prototype = {
+	
+		init : function() {
+			this.createIframe();
+			this.createForm();
+			$("body").append(this.ifr).append(this.form);
+		},
+	
+		createIframe : function() {
+			this.ifr = $("<iframe name="+this.name+" style='position: absolute; height: 10px; width: 10px; left: -9000px;top:-1000px'\/><\/iframe>");
+			a = this.ifr;
+		},
+	
+		createForm : function() {
+			this.form = $("<form>");
+			//console.log( this );
+			for( var p in this.cfg.opt ) {
+				this.form.attr(p, this.cfg.opt[p] );
+			};
+			this.form.attr("target",this.name).css("overflow","hidden").css("position","absolute").css("left",0).css("top",0).css("opacity",0);
+			this.form.append( $("<input>").attr({  type:"file", name:"file", accept:"image\/\*"  }).width( this.width ).height( this.height ) ).width( this.width ).height( this.height );
+		},
+	
+		ev : function() {
+			var _this = this;
+			this.contain.bind("mouseenter",function(ev) {
+				_this.contain.append(_this.form.show())
+			}).bind("mouseleave",function() {
+					_this.form.hide();
+				});
+			this.form.find("input").change(function(){
+				_this.form.submit();
+			})
+		}
+	};	
+})(jQuery);
+</script>
+<script>
+
+//new $.UploadPlugin( {el : "#portrait" , opt : {action : "http://xxx.xx.xxx.xx/cgi-bin/upload.cgi"} });
+//$("#portrait").UploadFrame("http://xxx.xx.xxx.xx/cgi-bin/upload.cgi");
+
+</script>
+</body>
+</html>
